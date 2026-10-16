@@ -57,10 +57,24 @@ class CityZipGeonamesImport(models.TransientModel):
         return domain
 
     @api.model
+    def _city_name(self, row, country):
+        """Return the city name for a Geonames row.
+
+        Hook so that modules can compose the name from other columns (e.g.
+        the municipality in admin_name3) without overriding every method that
+        builds or looks up the city.
+
+        :param row: One parsed CSV row
+        :param country: Country record
+        :return: The city name to create and search by
+        """
+        return self.transform_city_name(row[2], country)
+
+    @api.model
     def _select_city(self, row, country, state):
         return self.env["res.city"].search(
             [
-                ("name", "=", self.transform_city_name(row[2], country)),
+                ("name", "=", self._city_name(row, country)),
                 ("country_id", "=", country.id),
                 ("state_id", "=", state.id),
             ],
@@ -83,7 +97,7 @@ class CityZipGeonamesImport(models.TransientModel):
     @api.model
     def prepare_city(self, row, country, state):
         vals = {
-            "name": self.transform_city_name(row[2], country),
+            "name": self._city_name(row, country),
             "state_id": state.id,
             "country_id": country.id,
         }
@@ -244,9 +258,7 @@ class CityZipGeonamesImport(models.TransientModel):
             if search_zips:
                 zip_code = self._select_zip(row, country, state)
             if not zip_code:
-                city_id = city_dict[
-                    (self.transform_city_name(row[2], country), state.id)
-                ]
+                city_id = city_dict[(self._city_name(row, country), state.id)]
                 zip_vals = self.prepare_zip(row, city_id)
                 if zip_vals not in zip_vals_list:
                     zip_vals_list.append(zip_vals)
