@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="city_zip_geonames_import_form" model="ir.ui.view">
+        <field name="name">Import from Geonames form: municipality option</field>
+        <field name="model">city.zip.geonames.import</field>
+        <field
+            name="inherit_id"
+            ref="base_location_geonames_import.city_zip_geonames_import_form"
+        />
+        <field name="arch" type="xml">
+            <field name="letter_case" position="after">
+                <field name="use_admin3_in_city_name" />
+            </field>
+        </field>
+    </record>
+</odoo>
